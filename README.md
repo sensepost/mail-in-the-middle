@@ -1,7 +1,7 @@
 Summary
 =======
 
-[<img src="img/maitm.png">]
+<img src="img/maitm.png" width=250px height=250px>
 
 This script sits in the middle between a legitimate sender of an email and the legitimate recipient of that email. This means that we (the attackers) are receiving sensitive information not originally destined to us. I like to call these emails "Stranded emails".
 
@@ -17,7 +17,7 @@ A picture is worth a thousand words.
 
 Green email means "untainted" email. Red email means "tainted" email with attacker's controlled links, attachements, and content:
 
-[<img src="img/arch.png">]
+<img src="img/arch.png">
 
 # Usage
 
