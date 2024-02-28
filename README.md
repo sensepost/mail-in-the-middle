@@ -1,7 +1,9 @@
 Summary
 =======
 
-<img src="img/maitm.png" width=250px height=250px>
+<p align="center">
+  <img src="img/maitm.png" width=250px height=250px>
+</p>
 
 This script sits in the middle between a legitimate sender of an email and the legitimate recipient of that email. This means that we (the attackers) are receiving sensitive information not originally destined to us. I like to call these emails "Stranded emails".
 
