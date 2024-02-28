@@ -1,0 +1,6 @@
+fixed_destinations:
+  - felipe@mydomain.com
+sender: 
+  spoof: False
+  fixed: "OTP Microsoft <otp@mircosoft.com>"
+poll_interval: 60

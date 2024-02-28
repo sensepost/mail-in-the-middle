@@ -1,0 +1,22 @@
+from_domains: 
+  - pear.com
+  - atlassian.com
+  - microsoftonline.com
+to_domains:
+  - mircosoft.com
+  - micrrosoftr.com
+ignore_to_domains:
+  - donotlookatme.com
+subject_str:
+  - "OTP "
+  - "One Time Passcode"
+  - "One Time Password"
+  - "MFA "
+  - "2FA "
+ignore_subjects:
+  - "Workforce Optimization Notification"
+  - "proof of"
+  - "TO busIness"
+# Date limit should be specified with the time and the offset for the script to not fail
+# E.g. to specify the timestapm in UTC you have to add the +00 at the end
+date_limit: 2023-12-10 00:00:00+00

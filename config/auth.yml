@@ -1,0 +1,12 @@
+smtp:
+  username: otp@mircosoft.com
+  password: '<mypassword>'
+  server:  smtp.office365.com
+  port: 587
+  tls: True
+imap:
+  username: felipe@attacker.com
+  password: <anotherpassword>
+  server: mail.attacker.com
+  port: 993
+  ssl: True

@@ -1,0 +1,4 @@
+# Testing:
+teams: "https://<yourcompany>.webhook.office.com/webhookb2/<etc.>"
+# Testing discord
+discord: "https://discord.com/api/webhooks/<etc.>"
