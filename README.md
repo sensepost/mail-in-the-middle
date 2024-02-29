@@ -159,4 +159,4 @@ PRs are welcome. Please, let me know of any other ideas or suggestions via twitt
 
 Original Idea
 =============
-Szymon Ziolkowski ([@TH3_GOAT_FARM3R](https://twitter.com/TH3_GOAT_FARM3R)). Felipe Molina ([@felmoltor](https://twitter.com/felmoltor)) was just the dev and increased the original functionality :-)
+Intercepting mail using this method was originally spearheaded internally by [Willem Mouton](https://twitter.com/_w_m__). Szymon Ziolkowski ([@TH3_GOAT_FARM3R](https://twitter.com/TH3_GOAT_FARM3R)) proposed the automation that Felipe Molina ([@felmoltor](https://twitter.com/felmoltor)) then implemented and expanded on.
