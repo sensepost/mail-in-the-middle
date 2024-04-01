@@ -6,7 +6,7 @@ from imap_tools import MailBox, AND
 from imap_tools.message import MailMessage
 from email.mime.application import MIMEApplication
 import os, sys, time, re
-from datetime import datetime
+from datetime import datetime, timedelta
 from smtplib import SMTP
 from email.message import EmailMessage
 from bs4 import BeautifulSoup as bs
@@ -494,7 +494,7 @@ class Maitm():
                     for monitored_to in self.config["filter"]["to_domains"]:
                         self.logger.info("Searching emails to domain %s" % monitored_to)
                         # Search "From" filter  
-                        filter_mail=AND(to=monitored_to)
+                        filter_mail=AND(to=monitored_to, sent_date_gte=date_limit)
 
                         # Fetch found emails
                         try: 
@@ -519,11 +519,11 @@ class Maitm():
                     for monitored_from in self.config["filter"]["from_domains"]:
                         self.logger.info("Searching emails from %s" % monitored_from)
                         # Search "From" filter  
-                        filter_mail=AND(from_=monitored_from)
+                        filter_mail=AND(from_=monitored_from, sent_date_gte=date_limit)
 
                         # Fetch found emails
                         try: 
-                            for msg in self.imap_mailbox .fetch(filter_mail):
+                            for msg in self.imap_mailbox.fetch(filter_mail):
                                 if (self.only_new):
                                     if  self.is_new_email(msg.uid) and self.is_recent(msg) and (not self.ignored_domain(msg)) and (not self.ignored_subject(msg)):
                                         self.forward_chain(msg)
@@ -548,7 +548,7 @@ class Maitm():
                     
                         try:
                             # Fetch found emails
-                            for msg in self.imap_mailbox .fetch(filter_mail):
+                            for msg in self.imap_mailbox.fetch(filter_mail, sent_date_gte=date_limit):
                                 if (self.only_new):
                                     if  self.is_new_email(msg.uid) and self.is_recent(msg) and (not self.ignored_domain(msg)) and (not self.ignored_subject(msg)):
                                         self.forward_chain(msg)
