@@ -8,5 +8,8 @@ links:
   #shl.com: https://www.bing.com/search?q=an+elephant 
   #office.com: https://www.bing.com/search?q=a+squirrel
   #google.com: https://www.bing.com/search?q=a+zebra 
+headers:
+  X-Added-Header: "Test added header"
+  X-Phish-Test: "Authorized Phishing Test"
 tracking_url: "https://yourtrackingpixeldomain.com/"
 unc_path: "\\\\<YOUR IP>\\images\\xxxxx.png"

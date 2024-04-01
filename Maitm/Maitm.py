@@ -285,6 +285,15 @@ class Maitm():
         fake_msg.attach(att)
 
         return fake_msg
+    
+    """
+    Inject headers in the message headers
+    """
+    def inject_headers(self, fake_msg: EmailMessage):
+        # Inject headers
+        for hname,hvalue in self.config["injections"]["headers"].items():
+            fake_msg.add_header(hname,hvalue)
+        return fake_msg
 
 
     #################
@@ -371,8 +380,6 @@ class Maitm():
     """ 
     def forward_message(self,msg):
         # Pick the uid and with SMTP forward it
-        tracking_url=self.config["injections"]["tracking_url"]
-        unc_path=self.config["injections"]["unc_path"]
         spoof_sender=self.config["misc"]["sender"]["spoof"]
         fixed_sender=self.config["misc"]["sender"]["fixed"]
         forwarded=False
@@ -414,6 +421,8 @@ class Maitm():
                 # We do this before the file attachement itself because I don't like to manage the content of the object EmailMessage
                 if ("attachments" in self.config["injections"].keys() and "attachment_message" in self.config["injections"]["attachments"].keys()):
                     tainted_html=self.inject_attachment_message(tainted_html,self.config["injections"]["attachments"]["attachment_message"])
+                else:
+                    self.logger.debug("No attachment message to inject")
 
                 # Log the mapping  
                 fake_msg.add_alternative(tainted_html,subtype="html")
@@ -423,6 +432,14 @@ class Maitm():
                     if (("inject_new" in self.config["injections"]["attachments"] and self.config["injections"]["attachments"]["inject_new"]) or
                         ("replace_original" in self.config["injections"]["attachments"] and self.config["injections"]["attachments"]["replace_original"] and len(msg.attachments))):
                         fake_msg=self.inject_attachment(msg,fake_msg)
+                else:
+                    self.logger.debug("No attachements to inject")
+                
+                # Inject headers
+                if ("headers" in self.config["injections"].keys()):
+                    fake_msg=self.inject_headers(fake_msg)
+                else:
+                    self.logger.debug("No headers to inject")
 
                 if (self.forward_emails):
                     # Forward email to fixed destinations for testing purposes
@@ -439,13 +456,14 @@ class Maitm():
                 else:
                     forwarded=False
                     reason="All good to forward to %s with tracking ID %s, but no --forward flag was specified"  % (fake_msg["To"],id)
+                    self.logger.debug("Not forwarding the email. --forward flag not set.")
             else:
                 forwarded=False
                 reason="Typo fix rule not found"
         except Exception as e:
             forwarded=False
             reason="Error parsing original message: %s" % e
-            self.logger.error("Error: %s" % e)
+            self.logger.error("Error parsing the original message: %s" % e)
 
         return forwarded,fake_msg["To"],reason
 
@@ -471,71 +489,80 @@ class Maitm():
             if (date_limit is not None and datetime.now()>=date_limit):
                 break
             else:
-                self.logger.info("=== SEARCH TO DOMAINS ====")
-                for monitored_to in self.config["filter"]["to_domains"]:
-                    self.logger.info("Searching emails to domain %s" % monitored_to)
-                    # Search "From" filter  
-                    filter_mail=AND(to=monitored_to)
+                if ("to_domains" in self.config["filter"].keys() and len(self.config["filter"]["to_domains"])>0):
+                    self.logger.info("=== SEARCH 'TO' DOMAINS ====")
+                    for monitored_to in self.config["filter"]["to_domains"]:
+                        self.logger.info("Searching emails to domain %s" % monitored_to)
+                        # Search "From" filter  
+                        filter_mail=AND(to=monitored_to)
 
-                    # Fetch found emails
-                    try: 
-                        for msg in self.imap_mailbox.fetch(filter_mail):
-                            if (self.only_new):
-                                if  self.is_new_email(msg.uid) and self.is_recent(msg) and (not self.ignored_domain(msg)) and (not self.ignored_subject(msg)):
-                                    self.forward_chain(msg)
-                                else:
-                                    self.logger.debug("Ignoring email %s. Was already seen or not more recent than %s." % (msg.uid,date_limit))
-                            else:
-                                if self.is_recent(msg) and (not self.ignored_domain(msg)) and (not self.ignored_subject(msg)):
-                                    self.forward_chain(msg)
-                                else:
-                                    self.logger.debug("Ignoring email %s. Is older than %s." % (msg.uid,date_limit))
-                    except Exception as e:
-                        self.logger.error("Exception occured while fetching emails: %s" % e)
-
-                self.logger.info("=== SEARCH FROM DOMAINS ====")
-                for monitored_from in self.config["filter"]["from_domains"]:
-                    self.logger.info("Searching emails from %s" % monitored_from)
-                    # Search "From" filter  
-                    filter_mail=AND(from_=monitored_from)
-
-                    # Fetch found emails
-                    try: 
-                        for msg in self.imap_mailbox .fetch(filter_mail):
-                            if (self.only_new):
-                                if  self.is_new_email(msg.uid) and self.is_recent(msg) and (not self.ignored_domain(msg)) and (not self.ignored_subject(msg)):
-                                    self.forward_chain(msg)
-                                else:
-                                    self.logger.debug("Ignoring email %s. Was already seen or not more recent than %s." % (msg.uid,date_limit))
-                            else:
-                                if self.is_recent(msg) and (not self.ignored_domain(msg)) and (not self.ignored_subject(msg)):
-                                    self.forward_chain(msg)
-                                else:
-                                    self.logger.debug("Ignoring email %s. Is older than %s." % (msg.uid,date_limit))
-                    except Exception as e:
-                        self.logger.error("Exception occured while fetching emails: %s" % e)
-
-                self.logger.info("=== SEARCH SUBJECT ====")
-                for subject_str in self.config["filter"]["subject_str"]:
-                    self.logger.info("Searching emails containing with subject containing '%s'" % subject_str)
-                    # Search "Subject" filter  
-                    filter_mail=AND(subject=subject_str)
-                
-                    try:
                         # Fetch found emails
-                        for msg in self.imap_mailbox .fetch(filter_mail):
-                            if (self.only_new):
-                                if  self.is_new_email(msg.uid) and self.is_recent(msg) and (not self.ignored_domain(msg)) and (not self.ignored_subject(msg)):
-                                    self.forward_chain(msg)
+                        try: 
+                            for msg in self.imap_mailbox.fetch(filter_mail):
+                                if (self.only_new):
+                                    if  self.is_new_email(msg.uid) and self.is_recent(msg) and (not self.ignored_domain(msg)) and (not self.ignored_subject(msg)):
+                                        self.forward_chain(msg)
+                                    else:
+                                        self.logger.debug("Ignoring email %s. Was already seen or not more recent than %s." % (msg.uid,date_limit))
                                 else:
-                                    self.logger.debug("Ignoring email %s. It is not new." % msg.uid)
-                            else:
-                                if self.is_recent(msg) and (not self.ignored_domain(msg)) and (not self.ignored_subject(msg)):
-                                    self.forward_chain(msg)
+                                    if self.is_recent(msg) and (not self.ignored_domain(msg)) and (not self.ignored_subject(msg)):
+                                        self.forward_chain(msg)
+                                    else:
+                                        self.logger.debug("Ignoring email %s. Is older than %s." % (msg.uid,date_limit))
+                        except Exception as e:
+                            self.logger.error("Exception occured while fetching emails: %s" % e)
+                else:
+                    self.logger.info("No 'to_domains' defined in the configuration file")
+
+                if ("from_domains" in self.config["filter"].keys() and len(self.config["filter"]["from_domains"])>0):
+                    self.logger.info("=== SEARCH 'FROM' DOMAINS ====")
+                    for monitored_from in self.config["filter"]["from_domains"]:
+                        self.logger.info("Searching emails from %s" % monitored_from)
+                        # Search "From" filter  
+                        filter_mail=AND(from_=monitored_from)
+
+                        # Fetch found emails
+                        try: 
+                            for msg in self.imap_mailbox .fetch(filter_mail):
+                                if (self.only_new):
+                                    if  self.is_new_email(msg.uid) and self.is_recent(msg) and (not self.ignored_domain(msg)) and (not self.ignored_subject(msg)):
+                                        self.forward_chain(msg)
+                                    else:
+                                        self.logger.debug("Ignoring email %s. Was already seen or not more recent than %s." % (msg.uid,date_limit))
                                 else:
-                                    self.logger.debug("Ignoring email %s. Is older than %s." % (msg.uid,date_limit))
-                    except Exception as e:
-                        self.logger.error("Exception occured while fetching emails: %s" % e)
+                                    if self.is_recent(msg) and (not self.ignored_domain(msg)) and (not self.ignored_subject(msg)):
+                                        self.forward_chain(msg)
+                                    else:
+                                        self.logger.debug("Ignoring email %s. Is older than %s." % (msg.uid,date_limit))
+                        except Exception as e:
+                            self.logger.error("Exception occured while fetching emails: %s" % e)
+                else:
+                    self.logger.info("No 'from_domains' defined in the configuration file")
+
+                if ("subject_str" in self.config["filter"].keys() and len(self.config["filter"]["subject_str"])>0):
+                    self.logger.info("=== SEARCH SUBJECT ====")
+                    for subject_str in self.config["filter"]["subject_str"]:
+                        self.logger.info("Searching emails containing with subject containing '%s'" % subject_str)
+                        # Search "Subject" filter  
+                        filter_mail=AND(subject=subject_str)
+                    
+                        try:
+                            # Fetch found emails
+                            for msg in self.imap_mailbox .fetch(filter_mail):
+                                if (self.only_new):
+                                    if  self.is_new_email(msg.uid) and self.is_recent(msg) and (not self.ignored_domain(msg)) and (not self.ignored_subject(msg)):
+                                        self.forward_chain(msg)
+                                    else:
+                                        self.logger.debug("Ignoring email %s. It is not new." % msg.uid)
+                                else:
+                                    if self.is_recent(msg) and (not self.ignored_domain(msg)) and (not self.ignored_subject(msg)):
+                                        self.forward_chain(msg)
+                                    else:
+                                        self.logger.debug("Ignoring email %s. Is older than %s." % (msg.uid,date_limit))
+                        except Exception as e:
+                            self.logger.error("Exception occured while fetching emails: %s" % e)
+                else:
+                    self.logger.info("No 'subject_str' defined in the configuration file")    
 
                 # Every hour send a teams heartbeat message
                 # heartbeat(config)

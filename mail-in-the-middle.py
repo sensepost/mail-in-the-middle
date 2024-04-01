@@ -48,6 +48,10 @@ def main():
     # Init logging
     log_filename = "logs/" + datetime.now().strftime('%Y%m%d_%H%M%S') + '_mailinthemiddle.log'
     init_logging(log_filename)
+    # Create forwarded emails list file if it does not exists
+    if not os.path.exists("forwardedemails.txt"):
+        open("forwardedemails.txt", "w").close()
+
     # Create Maitm object
     maitm = Maitm(config_file=arguments.config, 
                   only_new=arguments.new,
