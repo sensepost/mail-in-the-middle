@@ -118,8 +118,10 @@ dist
 .vscode
 .github
 config.yml
+config*.yaml
 forwardedemails.txt
 config*.yml
+config*.yaml
 
 *.pyc
 *.old
