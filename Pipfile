@@ -9,6 +9,9 @@ pymsteams = "*"
 pyyaml = "*"
 beautifulsoup4 = "*"
 discord-webhook = "*"
+requests = ">=2.32.0"
+urllib3 = ">=2.2.2"
+idna = ">=3.7"
 
 [dev-packages]
 
