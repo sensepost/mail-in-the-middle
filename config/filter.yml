@@ -1,22 +1,31 @@
-from_domains: 
-  - pear.com
-  - atlassian.com
-  - microsoftonline.com
-to_domains:
-  - mircosoft.com
-  - micrrosoftr.com
-ignore_to_domains:
-  - donotlookatme.com
-subject_str:
-  - "OTP "
-  - "One Time Passcode"
-  - "One Time Password"
-  - "MFA "
-  - "2FA "
-ignore_subjects:
-  - "Workforce Optimization Notification"
-  - "proof of"
-  - "TO busIness"
+monitor: 
+  subject:
+    - " OTP "
+    - "Password Reset"
+    - "Account Reset"
+    - "Reset Link"
+    - "Account Recover"
+  from_domains: 
+    - pear.com
+    - atlassian.com
+    - microsoftonline.com
+  to_domains:
+    - yourcatchalldomain.com
+    - mircosoft.com
+    - micrrosoftr.com
+    - yourclientdomian.com
+ignore:
+  seen_email: True
+  subjects:
+    - "Ignore this subject"
+    - "Do not look at me"
+  to_domains:
+    - donotlookatme.com
+  from_domains:
+    - donotlookatme.com
+    - microsoft.com
+    - gmail.com
+    - outlook.com
 # Date limit should be specified with the time and the offset for the script to not fail
 # E.g. to specify the timestapm in UTC you have to add the +00 at the end
-date_limit: 2023-12-10 00:00:00+00
+date_limit: 2024-03-14 12:00:40+00

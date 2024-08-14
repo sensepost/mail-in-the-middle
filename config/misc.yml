@@ -1,6 +1,6 @@
 fixed_destinations:
-  - felipe@mydomain.com
+  - felipe@mycatchall.com
 sender: 
   spoof: False
-  fixed: "OTP Microsoft <otp@mircosoft.com>"
+  fixed: "Microsoft Security <user@phishingdomain.com>"
 poll_interval: 60

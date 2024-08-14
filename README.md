@@ -52,6 +52,8 @@ Build and execute the container by running this:
 docker build -t maitm .       # Build
 docker run --rm -ti maitm -h  # To get help
 docker run --rm -ti maitm -c config/config.yml -f -n # To forward the emails and only forward newest emails
+# If you want to use your own configuration files and attachment folder you can map a volume for that:
+docker run -it --rm -v $(pwd)/config:/Maitm/config -v $(pwd)/attachments:/Maitm/attachments maitm -n -f -c config/myconfig.yml
 ```
 
 Change the configuration (-c) parameter and flags (-f, -n) per your needs.
@@ -62,7 +64,7 @@ Install pipenv on your environment, the dependencies and run:
 
 ```bash
 apt install pipenv
-pipenv install --python=3.10
+pipenv install --python=3.12
 pipenv shell
 ./mail-in-the-middle.py -n -f -c config/config.yml
 ```
@@ -101,33 +103,58 @@ domain:
 
 filter.yml
 ----------
-The file allows you to define what emails are forwarded and tainted with your links and content. The following parameters can be defined:
-* **from_domains**: A list of domains of the emails specified in the "From" field of the email.
-* **to_domains**: A list of domains of the emails specified in the "To" field of the email.
-* **ignore_to_domains**: A list of domains of the emails specified in the "To" field of the email to ignore.
-* **subject_str**: A list of subjects of emails to forward. Like "OTP", "Registration", etc.
-* **ignore_subjects**: A list of Subjects to ignore. If any of the previous filter matches (from_domains, to_domains, subject_srt), the email will not be forwarded if it contains the strings defined here.
+The file allows you to define what emails are forwarded and tainted with your links and content. The following root parameters can be defined:
+* **monitor**: A dictionary containing the criteria of what to monitor in loop. The keys you can use here are:
+  * **from_domains**: A list of domains of the emails specified in the "From" field of the email.
+  * **to_domains**: A list of domains of the emails specified in the "To" field of the email.
+  * **subject**: A list of subjects of emails to forward. Like "OTP", "Registration", etc.
+* **ignore**: A dictionary containing the criteria of what to ignore, like a deny-list of things you don't want to forward:
+  * **to_domains**: A list of domains of the emails specified in the "To" field of the email to ignore.
+  * **from_domains**: A list of domains of the emails specified in the "From" field of the email to ignore.
+  * **subjects**: A list of Subjects to ignore. If any of the previous filter matches (from_domains, to_domains, subject_srt), the email will not be forwarded if it contains the strings defined here.
+  * **seen_email**: A boolean indicating whether we should ignore already read emails or not.
 * **date_limit**: A UTC date with the format YYYY-MM-DD HH:mm:ss+00.Forward emails only if are more recent than this date.
 
 auth.yml
 --------
-Contains two sections. One for "smtp" and the other for "imap". The default content is self-explanatory:
+Contains two main sections: 
+* **send**: Two protocols can be used to send out emails: Microsoft O365 **oauth2legacy** or **smtp**. To use Microsoft O365 oauth2 legacy, refer to https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/grant-admin-consent?pivots=portal#construct-the-url-for-granting-tenant-wide-admin-consent
+* **read**: Two protocols can be used to read emails form your catchall email server: **imap** or **oauth2legacy**.
+An example configuration file using smtp for sending out emails and imap for reading emails from your inbox looks like this:
 ```yaml
-smtp:
-  username: hacker@attacker.com
-  password: 'Hunter2'
-  server:  smtp.attacker.com
-  port: 587
-  tls: True
-imap:
-  username: hacker@attacker.com
-  password: 'Hunter2'
-  server: imap.attacker.com
-  port: 993
-  ssl: True
+send:
+  oauth2legacy:
+    email: <user@phishingdomain.com>
+    password: <userpassword>
+    client_id: <your client id>
+    client_secret: <your client secret>
+    tenant_id: <your tenant id>
+read: 
+  imap:
+    username: <usercatchall@catchallserver.com>
+    password: <usercatchallpassword>
+    server: <imap.catchallserver.com>
+    port: 993
+    ssl: True
 ```
 
-The two sections are separated to ease sending out emails from a different infrastructure than the email receiving infrastructure.
+If you want to use smtp instead of oauth2 legacy, your file would look similar to this:
+```yaml
+send:
+  smtp:
+    username: <user@phishingdomain.com>
+    password: <userpassword>
+    server:  <smtp.yourdomain.com>
+    port: 587
+    tls: True
+read: 
+  imap:
+    username: <usercatchall@catchallserver.com>
+    password: <usercatchallpassword>
+    server: <imap.catchallserver.com>
+    port: 993
+    ssl: True
+```
 
 injections.yml
 --------------
@@ -135,9 +162,7 @@ Define what to do with the email content.
 It has four root keys:
 * **tracking_url**: The URL of your tracking pixel. It gets injected at the beggining of the email within an ```<img>``` tag. 
 * **unc_path**: The UNC path to exfiltrate NetNTLM tokens of your targets. It gets injected at the beggining of the email within an ```<img>``` tag.
-* **attachments**: It defines what to do with the attachments of the emails. It has to contain the following attributes:
-    * **replace_original**: If true, replace the original attachement with ours.
-    * **inject_new**: If the email does not have an attachment, inject ours.
+* **attachments**: It defines what to do with the attachments of the emails. If it is defined, it will replace the original attachment of the email or inject a new one if there was none. It has to contain the following attributes:
     * **path**: Path to our attachement.
     * **attachment_message**: HTML code to introduce at the beggining of the email to instruct your targets how to unzip and execute your payload ;-)
 * **links**: It defines what to do with the original links of the email. It can contain the following attributes:
@@ -147,7 +172,12 @@ It has four root keys:
 notifications.yml
 -----------------
 Two keys. One for "teams", other for "discord". Both optional.
-
+If you want to send a message to your Teams and Discord chats, your file would look like this:
+```yaml
+teams: "https://<yourcompany>.webhook.office.com/webhookb2/<etc>"
+# Testing discord
+discord: "https://discord.com/api/webhooks/<id>"
+```
 
 License
 =======

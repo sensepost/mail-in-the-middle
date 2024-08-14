@@ -126,3 +126,9 @@ config*.yaml
 *.pyc
 *.old
 *.drawio
+
+config/prod/*
+
+attachments/
+
+.DS_Store

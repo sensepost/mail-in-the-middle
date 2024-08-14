@@ -1,15 +1,12 @@
 attachments:
-  replace_original: False           # Replace original attachment if there is one
-  inject_new: True                 # If there are no attachments, inject a new one?
   path: /tmp/Phishing/documentation.pdf.zip  # Path to the attachment to inject
-  attachment_message: "<h2>Use the password 'documentation' to access the contents of the attached zip</h2>"
+  attachment_message: "Use the password 'documentation' to access the contents of the attached zip"
 links:
-  all: https://www.bing.com/search?q=a+bird # Evilginx Phishing Lure
+  all: https://www.bing.com/search?q=what+is+phishing # Evilginx/Gophish Phishing Lure URL
   #shl.com: https://www.bing.com/search?q=an+elephant 
   #office.com: https://www.bing.com/search?q=a+squirrel
   #google.com: https://www.bing.com/search?q=a+zebra 
 headers:
-  X-Added-Header: "Test added header"
-  X-Phish-Test: "Authorized Phishing Test"
-tracking_url: "https://yourtrackingpixeldomain.com/"
-unc_path: "\\\\<YOUR IP>\\images\\xxxxx.png"
+  X-Added-Header: "This is my injected header"
+tracking_url: "https://yourtrackingpixeldomain.com/path.html?param=1"
+unc_path: "\\\\1.1.1.1\\images\\xxxxx.png"

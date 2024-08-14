@@ -1,0 +1,6 @@
+auth: auth.yml
+filter: filter.yml
+injections: injections.yml
+misc: misc.yml
+notifications: notifications.yml
+typos: typos.yml

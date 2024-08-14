@@ -9,12 +9,10 @@ pymsteams = "*"
 pyyaml = "*"
 beautifulsoup4 = "*"
 discord-webhook = "*"
-requests = ">=2.32.0"
-urllib3 = ">=2.2.2"
-idna = ">=3.7"
+exchangelib = "*"
 
 [dev-packages]
+ipython = "*"
 
 [requires]
-python_version = "3.10"
-python_full_version = "3.10.2"
+python_version = "3.12"

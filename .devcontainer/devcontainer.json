@@ -1,0 +1,25 @@
+{
+    "name": "Maitm Dev Container",
+    "dockerFile": "../Dockerfile",
+    "context": "..",
+    "build": {
+      "args": {}
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.shell.linux": "/bin/sh"
+            },
+            "extensions": [
+                "ms-python.python",
+                "ms-azuretools.vscode-docker",
+                "ms-python.debugpy"
+            ]
+        }
+    },
+    "workspaceFolder": "/Maitm",
+    "postCreateCommand": "apk add git --no-cache && apk add openssh --no-cache",
+    "remoteUser": "root",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/Maitm,type=bind"
+  }
+  

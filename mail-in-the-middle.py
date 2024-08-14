@@ -28,9 +28,11 @@ def init_logging(log_filename):
     return logger
 
 def parse_arguments():
+    current_file_dir = os.path.dirname(os.path.abspath(__file__))
+
     parser = argparse.ArgumentParser(description='Monitor and relay emails with typos')
     parser.add_argument('-c','--config', dest='config',
-                        help='Configuration file with IMAP and SMTP details (Default: config/config.yml)', default="config/config.yml")
+                        help='Configuration file with IMAP and SMTP details (Default: config/config.yml)', default=os.path.join(current_file_dir, "config/config.yml"))
     parser.add_argument('-n','--new', dest='new', action="store_true",
                         help='Poll only for new emails')
     parser.add_argument('-f','--forward', dest='forward', action="store_true", default=False,
@@ -44,7 +46,12 @@ def parse_arguments():
 
 def main():
     # Parse options
-    arguments=parse_arguments()
+    arguments=parse_arguments()    
+    # Check if the config path is relative
+    if not os.path.isabs(arguments.config):
+        # If it is, convert it to an absolute path using the current working directory
+        arguments.config = os.path.join(os.getcwd(), arguments.config)
+
     # Init logging
     log_filename = "logs/" + datetime.now().strftime('%Y%m%d_%H%M%S') + '_mailinthemiddle.log'
     init_logging(log_filename)
@@ -57,10 +64,10 @@ def main():
                   only_new=arguments.new,
                   forward_emails=arguments.forward,
                   logfile=log_filename)
-    logging.info("Logging to SMTP server")
-    maitm.smtp_login()
-    logging.info("Logging to IMAP server")
-    maitm.imap_login()
+    logging.info("[%s] Logging to server for reading emails" % maitm.mailmanager.read_protocol.value)
+    maitm.mailmanager.login_read()
+    logging.info("[%s] Logging to server for sending emails" % maitm.mailmanager.send_protocol.value)
+    maitm.mailmanager.login_send()
 
     # Initial Heartbeat
     # maitm.heartbeat()
