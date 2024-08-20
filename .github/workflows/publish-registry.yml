@@ -1,0 +1,64 @@
+name: Publish Docker image and Create Release
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    
+    env:
+      IMAGE_NAME: maitm  # Define the image name variable
+
+    steps:
+    - name: Print Variables and Extract Git Tag
+      shell: bash
+      run: |
+        echo "ref_type: ${{github.ref_type}}"
+        echo "ref: ${{github.ref}}"
+        echo "base_ref: ${{github.base_ref}}"
+        echo "github.repository: ${{github.repository}}"
+        echo "GIT_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV 
+
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Log in to GitHub Container Registry
+      run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+    - name: Build Docker image
+      run: |
+        docker build -t ghcr.io/${{ github.repository }}/${{env.IMAGE_NAME}}:${{ github.ref_name }} .
+
+    - name: Build Docker Image
+      run: |
+        docker build \
+          --build-arg VERSION=${{ env.GIT_TAG }} \
+          --build-arg GITHUB_SHA=${{ github.sha }} \
+          --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+          -t ghcr.io/${{ github.repository }}/${{env.IMAGE_NAME}}:${{ github.ref_name }} \
+          -t ghcr.io/${{ github.repository }}/${{env.IMAGE_NAME}}:latest \
+          .
+      
+    - name: Push Docker image to GitHub Container Registry
+      run: |
+        docker push ghcr.io/${{ github.repository }}/${{env.IMAGE_NAME}}:${{ github.ref_name }}
+        docker push ghcr.io/${{ github.repository }}/${{env.IMAGE_NAME}}:latest
+
+
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Automatically provided by GitHub Actions
+      with:
+        tag_name: ${{ github.ref_name }}  # Use the tag name as the release title
+        release_name: Release ${{ github.ref_name }}
+        body: |
+          This is the release of version ${{ github.ref_name }}.
+        draft: false
+        prerelease: false

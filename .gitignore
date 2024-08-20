@@ -116,7 +116,6 @@ dist
 .pnp.*
 
 .vscode
-.github
 config.yml
 config*.yaml
 forwardedemails.txt

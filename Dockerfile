@@ -1,7 +1,20 @@
 FROM alpine:3.20
 LABEL name="Maitm"
+
+
+# Accept build arguments
+ARG VERSION
+ARG GITHUB_SHA
+ARG BUILD_DATE
+
+# Labels with dynamic values
 LABEL "com.example.vendor"="Orange Cyberdefense Sensepost Team"
-LABEL org.opencontainers.image.authors="Felipe Molina de la Torre"
+LABEL org.opencontainers.image.authors="Felipe Molina de la Torre (@felmoltor)"
+LABEL org.opencontainers.image.source="https://github.com/sensepost/mail-in-the-middle"
+LABEL org.opencontainers.image.url="https://github.com/sensepost/mail-in-the-middle"
+LABEL org.opencontainers.image.version=$VERSION
+LABEL org.opencontainers.image.revision=$GITHUB_SHA
+LABEL org.opencontainers.image.created=$BUILD_DATE
 
 COPY *.py /Maitm/
 COPY Pipfile /Maitm/

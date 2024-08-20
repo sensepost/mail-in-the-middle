@@ -5,6 +5,9 @@
     "build": {
       "args": {}
     },
+    "mounts": [
+        "source=${env:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached"
+      ],
     "customizations": {
         "vscode": {
             "settings": {
