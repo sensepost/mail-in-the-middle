@@ -7,6 +7,6 @@ links:
   #office.com: https://www.bing.com/search?q=a+squirrel
   #google.com: https://www.bing.com/search?q=a+zebra 
 headers:
-  X-Added-Header: "This is my injected header"
+  X-Added-Header: "This is my injected header" # Disclaimer: If you use Exchange 365, it will remove headers
 tracking_url: "https://yourtrackingpixeldomain.com/path.html?param=1"
 unc_path: "\\\\1.1.1.1\\images\\xxxxx.png"

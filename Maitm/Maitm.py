@@ -43,10 +43,17 @@ class Maitm():
         self.date_limit = self.config["filter"]["date_limit"] if "date_limit" in self.config["filter"].keys() else None
         # Set the ignore_seen flag to ignore emails that have been already read by this script
         self.ignore_seen = self.config["filter"]["ignore"]["ignore_seen"] if "ignore_seen" in self.config["filter"]["ignore"].keys() else False
-        self.spoof_sender=self.config["misc"]["sender"]["spoof"]
-        self.fixed_sender=self.config["misc"]["sender"]["fixed"]
-        self.poll_interval = self.config["misc"]["poll_interval"]
-        self.tracking_url = self.config["injections"]["tracking_url"]
+        self.spoof_sender=self.config["misc"]["sender"]["spoof"] if "spoof" in self.config["misc"]["sender"].keys() else False
+        self.fixed_sender=self.config["misc"]["sender"]["fixed"] if "fixed" in self.config["misc"]["sender"].keys() else None
+        self.poll_interval = self.config["misc"]["poll_interval"] if "poll_interval" in self.config["misc"].keys() else 60
+        self.tracking_url = self.config["injections"]["tracking_url"] if "tracking_url" in self.config["injections"].keys() else None
+        self.tracking_param = self.config["misc"]["tracking_param"] if "tracking_param" in self.config["misc"] else "customerid"
+        if "smtp" in self.config["auth"]["send"]:
+            self.authenticated_username = self.config["auth"]["send"]["smtp"]["username"]
+        elif "oauth2legacy" in self.config["auth"]["send"]:
+            self.authenticated_username = self.config["auth"]["send"]["smtp"]["email"]
+        else:
+            self.authenticated_username = None
 
         # Populate the bells
         self.build_bells()
@@ -596,7 +603,7 @@ class Maitm():
     def replace_links_html(self,id,content: bytes,charset=None):
         # Inline function to prepare the replacement URL
         def get_replacement_url(pl,id):
-            params = {'customerid':id}
+            params = {self.tracking_param:id}
             prepared_url = PreparedRequest()
             prepared_url.prepare_url(pl, params)
             return prepared_url.url
@@ -618,7 +625,7 @@ class Maitm():
 
     # Inline function to prepare the replacement URL
     def get_replacement_url(self,url,id):
-        params = {'customerid':id}
+        params = {self.tracking_param:id}
         prepared_url = PreparedRequest()
         prepared_url.prepare_url(url, params)
         return prepared_url.url
@@ -870,8 +877,8 @@ class Maitm():
                 fake_msg.replace_header("From",msg["from"]) # .name+" <"+msg.from_values.email+">"
             elif(self.fixed_sender is not None):
                 fake_msg.replace_header("From",self.fixed_sender)
-            elif(self.smtp_connection.user is not None):
-                fake_msg.replace_header("From",self.smtp_connection.user) # TODO: Get the user from the mailmanager object instead of the SMTP connection
+            elif(self.authenticated_username is not None):
+                fake_msg.replace_header("From",self.authenticated_username) 
             else:
                 fake_msg.replace_header("From","Max Headroom <max@headroom.com>")
             

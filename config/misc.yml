@@ -2,5 +2,6 @@ fixed_destinations:
   - felipe@mycatchall.com
 sender: 
   spoof: False
-  fixed: "Microsoft Security <user@phishingdomain.com>"
-poll_interval: 60
+  # fixed: "Microsoft Security <user@phishingdomain.com>"
+poll_interval: 120
+tracking_param: 'customerid'

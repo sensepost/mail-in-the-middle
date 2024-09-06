@@ -40,11 +40,34 @@ def parse_arguments():
 
     return parser.parse_args()
 
+def get_version():
+    v = "vX.X.X"
+    with open("version","r") as f:
+        v = f.readlines()[0].strip()
+    return v
+
+def banner():
+    b = """
+███╗   ███╗ █████╗ ██╗████████╗███╗   ███╗
+████╗ ████║██╔══██╗██║╚══██╔══╝████╗ ████║
+██╔████╔██║███████║██║   ██║   ██╔████╔██║
+██║╚██╔╝██║██╔══██║██║   ██║   ██║╚██╔╝██║
+██║ ╚═╝ ██║██║  ██║██║   ██║   ██║ ╚═╝ ██║
+╚═╝     ╚═╝╚═╝  ╚═╝╚═╝   ╚═╝   ╚═╝     ╚═╝  %s
+
+Man in the Middle, but for Mails
+Author: Felipe Molina de la Torre (@felmoltor)
+Original idea: Willem Mouton (@_w_m__), continued by Szymon Zilokowski (@TH3_GOAT_FARM3R)
+
+"""
+    print(b % get_version())
+
 ########
 # MAIN #
 ########
 
 def main():
+    banner()
     # Parse options
     arguments=parse_arguments()    
     # Check if the config path is relative
