@@ -347,12 +347,12 @@ class Maitm():
     Inject attachment message on plaintext content
     """
     def inject_attachment_message_plain(self,content: str,charset=None):
-        if ("attachments" in self.config["injections"].keys() and "attachment_message" in self.config["injections"]["attachments"].keys()):
+        if (self.attachment is not None and self.attachment_message is not None):
             content=self.config["injections"]["attachments"]["attachment_message"]+"\n\n"+content
-            return content
         else:
             self.logger.debug("No attachment message to inject in the email.")
-            return None
+
+        return content
             
     
     """
@@ -764,6 +764,7 @@ class Maitm():
         target_html=target_html.replace('\xa0',' ')
 
         # Insert the tracking pixel
+        tainted_html_bytes = target_html_bytes
         if (self.tracking_url is not None):
             tainted_html_bytes=self.insert_tracking_pixel_html(id,target_html_bytes,charset=charset)
         # Insert the UNC path
