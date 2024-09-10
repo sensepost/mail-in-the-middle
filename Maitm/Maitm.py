@@ -47,11 +47,15 @@ class Maitm():
         self.fixed_sender=self.config["misc"]["sender"]["fixed"] if "fixed" in self.config["misc"]["sender"].keys() else None
         self.poll_interval = self.config["misc"]["poll_interval"] if "poll_interval" in self.config["misc"].keys() else 60
         self.tracking_url = self.config["injections"]["tracking_url"] if "tracking_url" in self.config["injections"].keys() else None
+        self.unc_path = self.config["injections"]["unc_path"] if "unc_path" in self.config["injections"].keys() else None
+        self.links =  self.config["injections"]["links"] if "links" in self.config["injections"].keys() else None
+        self.attachment =  self.config["injections"]["attachments"]["path"] if "attachments" in self.config["injections"].keys() and "path" in self.config["injections"]["attachments"].keys() else None
+        self.attachment_message =  self.config["injections"]["attachments"]["attachment_message"] if "attachments" in self.config["injections"].keys() and "attachment_message" in self.config["injections"]["attachments"].keys() else None
         self.tracking_param = self.config["misc"]["tracking_param"] if "tracking_param" in self.config["misc"] else "customerid"
         if "smtp" in self.config["auth"]["send"]:
             self.authenticated_username = self.config["auth"]["send"]["smtp"]["username"]
         elif "oauth2legacy" in self.config["auth"]["send"]:
-            self.authenticated_username = self.config["auth"]["send"]["smtp"]["email"]
+            self.authenticated_username = self.config["auth"]["send"]["oauth2legacy"]["email"]
         else:
             self.authenticated_username = None
 
@@ -760,16 +764,20 @@ class Maitm():
         target_html=target_html.replace('\xa0',' ')
 
         # Insert the tracking pixel
-        tainted_html_bytes=self.insert_tracking_pixel_html(id,target_html_bytes,charset=charset)
+        if (self.tracking_url is not None):
+            tainted_html_bytes=self.insert_tracking_pixel_html(id,target_html_bytes,charset=charset)
         # Insert the UNC path
-        tainted_html_bytes=self.insert_unc_path_html(id,tainted_html_bytes,charset=charset)
+        if (self.unc_path is not None):
+            tainted_html_bytes=self.insert_unc_path_html(id,tainted_html_bytes,charset=charset)
         # Modify the links
-        tainted_html_bytes=self.replace_links_html(id,tainted_html_bytes, charset=charset)
+        if (self.links is not None):
+            tainted_html_bytes=self.replace_links_html(id,tainted_html_bytes, charset=charset)
         # Inject the attachment message if defined
         # We do this before the file attachement itself because I don't like to manage the content of the object EmailMessage
-        tainted_html_bytes=self.inject_attachment_message_html(tainted_html_bytes,charset=charset)
-        # Setting the new HTML payload with the tainted content 
+        if (self.attachment_message):
+            tainted_html_bytes=self.inject_attachment_message_html(tainted_html_bytes,charset=charset)
         
+        # Setting the new HTML payload with the tainted content 
         # The email can contain unicode characters, so we need to convert them to an adequate ascii encoding supported by smtplib and exchangelib
         # They will send weird characters if we don't do this
         encoded_payload,transfer_encoding = self.prepare_payload_for_email(tainted_html_bytes, content_type=content_type, charset=charset)

@@ -18,8 +18,11 @@ LABEL org.opencontainers.image.created=$BUILD_DATE
 
 COPY *.py /Maitm/
 COPY Pipfile /Maitm/
+COPY Pipfile.lock /Maitm/
 COPY Maitm /Maitm/Maitm
 COPY config /Maitm/config
+COPY version /Maitm/version
+COPY README.md /Maitm/
 RUN apk update && \
     apk add python3 && \
     apk add py3-pip && \
