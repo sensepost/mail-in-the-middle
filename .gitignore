@@ -127,6 +127,7 @@ config*.yaml
 *.drawio
 
 config/prod/*
+config/demo*
 
 attachments/
 

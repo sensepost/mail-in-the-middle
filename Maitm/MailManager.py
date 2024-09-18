@@ -1,5 +1,6 @@
 # General imports
 import yaml
+import json
 from enum import Enum
 import logging.config
 import os
@@ -213,12 +214,18 @@ class MailManager():
             self.logger.error("Unsupported protocol for reading emails")
             return None
 
+    def _json_serializer_with_datetime(self, obj):
+        if isinstance(obj, datetime):
+            return obj.isoformat()  # Converts datetime to a string in ISO 8601 format
+        raise TypeError(f"Type {type(obj)} not serializable")
+
     """
     Fetches emails using the exchangelib account object
     """
     def _fetch_emails_exchangelib(self, criteria: dict, number: int = 10):
         # date_limit: datetime = None, domain_to: str = None, domain_from: str = None, subject: str = None, ignore_seen: bool=True
-        self.logger.info("[Exchangelib] Fetching %s emails with criteria: %s" % (number, criteria))
+
+        self.logger.info("[Exchangelib] Fetching %s emails with criteria:\n%s" % (number, json.dumps(criteria, indent=1, default=self._json_serializer_with_datetime)))
         
         query = None
         if criteria["ignore_seen"]:
@@ -250,7 +257,7 @@ class MailManager():
     Fetches emails using the IMAP protocol
     """
     def _fetch_emails_imap(self, criteria: dict, number: int = 10):
-        self.logger.info("[IMAP] Fetching %s emails with filters: %s" % (number, criteria))
+        self.logger.info("[IMAP] Fetching %s emails with criteria:\n%s" % (number, json.dumps(criteria, indent=1, default=self._json_serializer_with_datetime)))
 
         # Building the search criteria
         imap_criteria = {}

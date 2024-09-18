@@ -1,0 +1,326 @@
+/****************/
+/* TYPOS STYLES */
+/****************/
+
+.outer-typos-grid {
+    layout: grid;
+    grid-size: 2 2;
+    grid-columns: 50% 50%;
+    grid-rows: 90% 10%;
+}
+
+.typos-box {
+    border: solid rgb(34, 12, 130);
+}
+
+.inner-typos-grid {
+    layout: grid;
+    grid-size: 1 4;
+    /* grid-columns: 100%; */
+    grid-rows: 5% 70% 15% 15%;
+    border: solid rgb(131, 23, 79);
+}
+
+.typos-form-data-grid {
+    layout: grid;
+    grid-size: 4 1;
+    grid-columns: 10% 40% 10% 40%;
+    border: solid rgb(216, 147, 37);
+}
+
+.inner-typos-label {
+    text-style: bold;
+}
+
+.typos-listview {
+    align: center top;
+    border: #aaaaaa;
+}
+/* 
+.typos-listitem {
+    padding: 1;
+} */
+
+/*************************/
+/* NOTIFICATIONS STYLES */
+/*************************/
+
+/* Grid for input fields */
+.notifications-input-grid {
+    layout: grid;
+    grid-size: 2;
+    grid-columns: 10% 90%; 
+    padding: 1;
+}
+
+.notifications-container {
+    layout: grid;
+    grid-size: 1 3;
+    grid-rows: 15% 15% 70%;
+}
+
+/* Labels */
+#teams-label, #discord-label {
+    text-style: bold;
+}
+
+/*****************/
+/* FILTER STYLES */
+/*****************/
+
+.root-filter-grid {
+    layout: grid;
+    grid-size: 1 3;
+    grid-rows: 15vh 160vh 15vh;
+}
+
+.filter-form-label {
+    align: center middle;
+    text-align: center;
+    text-style: bold;
+    margin-bottom: 1;
+}
+
+.filter-box {
+    border: solid rgb(190, 174, 147);
+    layout: grid;
+    grid-size: 1 4;
+    grid-rows: 10% 50% 20% 20%;
+}
+
+.outer-filter-box {
+    border: green;
+}
+/* 
+.filter-listitem {
+    padding: 1;
+} */
+
+.filter-first-row {
+    layout: grid;
+    grid-size: 4 1;
+    grid-columns: 10% 10% 10% 70%;
+    /* border: rgb(204, 16, 166); */
+}
+
+.inner-filter-label {
+    text-style: bold;
+    align: center middle;
+    text-align: center;
+    /* border: wide white; */
+    text-align: center;
+    padding-bottom: 1;
+}
+
+/*********************/
+/* INJECTIONS STYLES */
+/*********************/
+
+.inner-injections-label {
+    text-style: bold;
+    align: center middle;
+    text-align: center;
+    /* border: wide white; */
+    text-align: center;
+    padding-bottom: 1;
+}
+
+.injections-form-label {
+    align: center middle;
+    text-align: center;
+}
+
+.injections-box {
+    border: solid green;
+    height: 70vh;
+}
+
+.injections-box-other {
+    height: 35vh;
+}
+
+.injections-box-attachments {
+    height: 35vh;
+} 
+
+.injections-listsviews-box {
+    layout: grid;
+    grid-size: 1 5;
+    grid-rows: 10% 55% 10% 15% 15%;
+}
+
+.injections-headers-input {
+    layout: grid;
+    grid-size: 4 1;
+    grid-columns: 10% 40% 10% 40%;
+}
+
+.injections-link-all-input {
+    layout: grid;
+    grid-size: 2 1;
+    grid-columns: 10% 90%;
+    display: none;
+}
+
+.injections-link-domain-input {
+    layout: grid;
+    grid-size: 4 1;
+    grid-columns: 7% 21% 7% 65%;
+    display: none;
+}
+
+.injections-form-buttons {
+    padding-top: 1;
+}
+
+.vertical-scroll-container {
+    height: 80%;   /* Ensure height is limited so content can overflow */
+    overflow-y: auto;  /* Enable vertical scrolling */
+    border: solid rgb(131, 23, 79);
+}
+
+.injections-listviews {
+    align: center top;
+    border: #aaaaaa;
+}
+
+/* .injections-listitem {
+    padding: 1;
+} */
+
+/*************************/
+/* AUTHENTICATION STYLES */
+/*************************/
+
+.grid-auth {
+    layout: grid;
+    grid-size: 2 3;
+    grid-columns: 20% 80%;
+    grid-rows: 60vh 60vh 10vh;
+}
+
+.auth-box {
+    border: solid green;
+    height: auto;
+    /* width: auto; */
+}
+
+#sending-emails-label,
+#reading-emails-label {
+    text-style: bold;
+    /* text-align: center; */
+}
+
+/* Force all the labels in the authentication form have the same width, so the form does not look ugly */
+.label-auth-form {
+    width: 15;  /* Set a fixed width for labels */
+    text-align: right;  /* Align the text to the right */
+    padding-right: 1;  /* Add a bit of padding for spacing */
+}
+
+.visible {
+    display: block;
+}
+
+.hidden {
+    display: none;
+}
+
+.smtp-send-params-box {
+    display: block;
+}
+
+.oauth2l-send-params-box {
+    display: none;
+}
+
+.imap-read-params-box {
+    display: block;
+}
+
+.oauth2l-read-params-box {
+    display: none;
+}
+
+/******************/
+/* MISCELANEA TAB */
+/******************/
+.miscelanea-box {
+    padding: 1;
+    margin-bottom: 1;
+    border: green;
+    /* align: center middle; */
+}
+
+.miscelanea-listview {
+    border: #aaaaaa;
+    overflow: auto;
+}
+
+.miscelanea-container {
+    padding: 1;
+    layout: grid;
+    grid-size: 1 3;
+    grid-rows: 75vh 60vh 10vh;  
+    overflow-y: scroll;
+}
+
+/**************/
+/* RUN SCREEN */
+/**************/
+
+#run-button {
+    width: 90%;
+    color: white;
+    padding: 1;
+    align: center top;
+}
+
+#button-configuration {
+    padding: 1;
+}
+
+#configuration-container {
+    align: center top;
+}
+
+#left-panel {
+    width: 25%;
+    padding: 1;
+}
+
+#terminal_output {
+    width: 70%;
+    background: black;
+    color: white;
+}
+
+#testing-container {
+    layout: grid;
+    grid-size: 1 4;
+    content-align: left top;
+}
+
+.hidden {
+    display: none;
+}
+
+.top-dock-margin {
+    /* dock: top; */
+    margin-top: 1;
+    align: center middle;
+}
+
+#fixed-destinations-box {
+    layout: grid;
+    grid-size: 1 4;
+    grid-rows: 10% 60% 15% 15%;
+}
+
+#testing-onlynewmails-container {
+    margin-top: 1;
+}
+
+#collapsible-testing-settings {
+    height: auto;
+}
