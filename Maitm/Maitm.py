@@ -5,10 +5,8 @@ import yaml
 from imap_tools import MailBox, AND
 # from imap_tools.message import MailMessage
 from email.mime.application import MIMEApplication
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 import os, sys, time, re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from smtplib import SMTP
 # from email.message import EmailMessage
 from email.message import EmailMessage as PythonEmailMessage
@@ -23,9 +21,16 @@ import re
 from email.utils import parseaddr, getaddresses
 import quopri
 import copy
+from threading import Event as ThreadingEvent
 
 class Maitm():
-    def __init__(self,config_file=None,only_new=True,forward_emails=False,logfile="logs/maitm.log",level=logging.INFO) -> None:
+    def __init__(self,
+                 config_file=None,
+                 only_new=True,
+                 forward_emails=False,
+                 logfile="logs/maitm.log",
+                 level=logging.INFO, 
+                 stop_event: ThreadingEvent = None) -> None:
         self.config = {}
         self.bells = []
         self.typos = {}
@@ -33,12 +38,13 @@ class Maitm():
         self.only_new = only_new
         self.forward_emails = forward_emails
         self.logfile=logfile
+        self.threading_stop_event = stop_event
 
         # Initialization
         if (os.path.exists(config_file)):
             self.read_config(config_file=config_file)
 
-        self.mailmanager=MailManager(auth_config=self.config['auth'],logfile=datetime.now().strftime("logs/%Y%m%d_%H%M%S_mailmanager.log"))
+        self.mailmanager=MailManager(auth_config=self.config['auth'], logfile=self.logfile) # datetime.now().strftime("logs/%Y%m%d_%H%M%S_mailmanager.log"))
         # set the date limit to search emails 
         self.date_limit = self.config["filter"]["date_limit"] if "date_limit" in self.config["filter"].keys() else None
         # Set the ignore_seen flag to ignore emails that have been already read by this script
@@ -147,18 +153,26 @@ class Maitm():
             sys.stdout.write("{:2d}s".format(remaining)) 
             sys.stdout.flush()
             time.sleep(1)
+            # Check the stop_thread to cancel ahead of time
+            if self.threading_stop_event is not None and self.threading_stop_event.is_set():
+                self.logger.info("Maitm has been stopped - Stopping countdown.")
+                break
         sys.stdout.write("\n")
 
     """
     If the UID of this email has not been previously forwarded, it is consired new email
     """
     def is_new_email(self,msg_uid: str):
+        # Check if the file exists, if not, create it
+        if not os.path.exists("forwardedemails.txt"): open("forwardedemails.txt", "w").close()
         uids=[uid.strip() for uid in open("forwardedemails.txt","r").readlines()]
         return msg_uid not in uids
     """
     Save this UID as observed and forwarded
     """
     def flag_observed(self,msg_uid: str):
+        # Check if the file exists, if not, create it
+        if not os.path.exists("forwardedemails.txt"): open("forwardedemails.txt", "w").close()
         with open("forwardedemails.txt","a") as fe:
             fe.write(msg_uid+"\n")
     
@@ -351,8 +365,7 @@ class Maitm():
             content=self.config["injections"]["attachments"]["attachment_message"]+"\n\n"+content
         else:
             self.logger.debug("No attachment message to inject in the email.")
-
-        return content
+            return content
             
     
     """
@@ -760,38 +773,42 @@ class Maitm():
         # I get \xa0 characters when using beautiful soup and there are &nbsp; characters in the original html so we need to fix that thing manually :-(
         # Due to this annoying behaviour, I need to manually replace all &nbsp; html entities from the original HTML.
         # What annoys me most is that this is not happening with other HTML entities, such as &lt; or &gt;
-        target_html=target_html.replace('&nbsp;',' ')
-        target_html=target_html.replace('\xa0',' ')
+        target_html=target_html.replace('&nbsp;',' ').replace('\xa0',' ')
+        tainted_html_bytes=target_html
 
         # Insert the tracking pixel
-        tainted_html_bytes = target_html_bytes
-        if (self.tracking_url is not None):
+        if (self.tracking_url is not None and len(self.tracking_url)>0):
             tainted_html_bytes=self.insert_tracking_pixel_html(id,target_html_bytes,charset=charset)
+        
         # Insert the UNC path
-        if (self.unc_path is not None):
+        if (self.unc_path is not None and len(self.unc_path)>0):
             tainted_html_bytes=self.insert_unc_path_html(id,tainted_html_bytes,charset=charset)
+        
         # Modify the links
-        if (self.links is not None):
+        if (self.links is not None and len(self.links)>0):
             tainted_html_bytes=self.replace_links_html(id,tainted_html_bytes, charset=charset)
+        
         # Inject the attachment message if defined
         # We do this before the file attachement itself because I don't like to manage the content of the object EmailMessage
-        if (self.attachment_message):
+        if (self.attachment_message is not None and len(self.attachment_message)>0):
             tainted_html_bytes=self.inject_attachment_message_html(tainted_html_bytes,charset=charset)
+        # Setting the new HTML payload with the tainted content 
         
         # Setting the new HTML payload with the tainted content 
         # The email can contain unicode characters, so we need to convert them to an adequate ascii encoding supported by smtplib and exchangelib
         # They will send weird characters if we don't do this
         encoded_payload,transfer_encoding = self.prepare_payload_for_email(tainted_html_bytes, content_type=content_type, charset=charset)
-        self.logger.debug("Charset before setting payload: %s" % charset)
-        self.logger.debug("Encoding before setting payload: %s" % part.get('Content-Transfer-Encoding'))
+        # self.logger.debug("Charset before setting payload: %s" % charset)
+        # self.logger.debug("Encoding before setting payload: %s" % part.get('Content-Transfer-Encoding'))
+        
         # Change the payload encoding header to match the variable 'encoding'
         if (part.get('Content-Transfer-Encoding') is not None):
             part.replace_header('Content-Transfer-Encoding', transfer_encoding)
         else:
             part.add_header('Content-Transfer-Encoding', transfer_encoding)
         part.set_payload(encoded_payload)
-        self.logger.debug("Charset after setting payload: %s" % part.get_content_charset())
-        self.logger.debug("Encoding after setting payload: %s" %  part.get('Content-Transfer-Encoding'))
+        # self.logger.debug("Charset after setting payload: %s" % part.get_content_charset())
+        # self.logger.debug("Encoding after setting payload: %s" %  part.get('Content-Transfer-Encoding'))
 
     """
     Taint the plain text part of the email
@@ -882,11 +899,11 @@ class Maitm():
         try:
             # fake_msg.replace_header("Subject",msg["subject"].replace("\n","").replace("\r",""))
             # Decide what sender we are going to be
-            if (self.spoof_sender):
+            if (self.spoof_sender and len(msg["from"])>0):
                 fake_msg.replace_header("From",msg["from"]) # .name+" <"+msg.from_values.email+">"
-            elif(self.fixed_sender is not None):
+            elif(self.fixed_sender is not None and len(self.fixed_sender)>0):
                 fake_msg.replace_header("From",self.fixed_sender)
-            elif(self.authenticated_username is not None):
+            elif(self.authenticated_username is not None and len(self.authenticated_username)>0):
                 fake_msg.replace_header("From",self.authenticated_username) 
             else:
                 fake_msg.replace_header("From","Max Headroom <max@headroom.com>")
@@ -1038,14 +1055,22 @@ class Maitm():
                 else:
                     self.logger.info("No more emails to fetch. Stopping the search.")
                     break
-                    
 
+        # If self.date_limit is naive, convert it to timezone-aware (e.g., UTC)
+        if self.date_limit.tzinfo is None:
+            self.date_limit = self.date_limit.replace(tzinfo=timezone.utc)
 
         ############################
         # Never stop or stop monitoring if there's a date_limit defined and is still ahead of now
         ############################
         while (1):
-            if (self.date_limit is not None and datetime.now() < self.date_limit.replace(tzinfo=None)):
+            # Pay attention to the threading event 'stop_event' in case that it has been defined
+            if self.threading_stop_event is not None and self.threading_stop_event.is_set():
+                self.logger.info("Maitm has been stopped.")
+                break
+            
+            # Filter by date
+            if (self.date_limit is not None and datetime.now(timezone.utc) < self.date_limit): # .replace(tzinfo=None)):
                 self.logger.info("Date limit is in the future. Stopping the monitoring")
                 break
             else:
@@ -1075,4 +1100,4 @@ class Maitm():
                 self.countdown(self.poll_interval)
         
         # Date limit hit
-        self.logger.info("Date limit reached. Stopping the monitoring")
+        self.logger.info("Email monitoring finished.")
