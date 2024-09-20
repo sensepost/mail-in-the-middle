@@ -37,7 +37,7 @@ Open the file "config/config.yml", configure the name of the files containing th
 For detailed information about how to configure each of these sub-configuration files, refer to the section ["Configuration files"](#configuration-files).
 
 ## Execution
-Once the configuration has been done, you can invoke the script using docker or by installing the dependencies with pipenv.
+Once the configuration has been done, you can invoke the script using docker or by installing the dependencies with pipenv. You can use the CLI version of the tool, or the Textual User Interface (TUI).
 
 ## Flags
 Use the flag "-f" to forward the emails for real (without this flag, the script would only  monitor the incoming emails and send them to the Discord/Teams chat).
@@ -53,10 +53,55 @@ docker build -t maitm .       # Build
 docker run --rm -ti maitm -h  # To get help
 docker run --rm -ti maitm -c config/config.yml -f -n # To forward the emails and only forward newest emails
 # If you want to use your own configuration files and attachment folder you can map a volume for that:
-docker run -it --rm -v $(pwd)/config:/Maitm/config -v $(pwd)/attachments:/Maitm/attachments maitm -n -f -c config/myconfig.yml
+docker run -it --rm -v $(pwd)/config:/Maitm/config -v $(pwd)/attachments:/Maitm/attachments maitm cli -n -f -c config/myconfig.yml
 ```
 
-Change the configuration (-c) parameter and flags (-f, -n) per your needs.
+Or alternatively get the package from ghcr.io:
+```bash
+docker pull ghcr.io/sensepost/mail-in-the-middle/maitm:latest
+docker tag ghcr.io/sensepost/mail-in-the-middle/maitm:latest maitm
+```
+
+## TUI
+
+There is a Textual User Interface (TUI) of the tool that you can invoke by using the option "tui" instead of "cli":
+
+```bash 
+docker run -it --rm maitm tui
+```
+
+The TUI will allow you to run the tool by clicking the big Green button.
+The main screen looks like the following:
+
+<img src='img/maitm-run-interface.png'/>
+
+You can select the configuration section by clicking the "configuration" button or pressing the "c" key.
+The configuration section has six different tabs.
+
+The 'Authentication' tab allows you to define the protocols and credentials to be used for outbound and inbound emails:
+
+<img src='img/maitm-auth-screen.png'/>
+
+The 'Filter' tab allows you decide what emails you want the tool to act upon and forward. You can define the date since maitm will start looking for emails, if you want to ignore read emails or not, and the criteria to monitor or ignore. You can monitor/ignore some subjects, destination domains and source domains:
+
+<img src='img/maitm-filter.png'/>
+
+The 'Injection' tab allows you to define what do you want to do with the selected emails, for example if you want to replace 'all' links or just links directing to a specific domain (top level domain). It also allows you to define headers to be injected, files to attach, and invisible tracking pixel and UNC links:
+
+<img src='img/maitm-injections.png'/>
+
+The 'Typos' tab allow you to define the rules to correct the mistiped domains. You can fix the domain or you can fix individual addresses:
+
+<img src='img/maitm-typos.png'/>
+
+The 'notifications' tab will let you define the Teams and Discord webhook where you will receive notifications about emails forwarded, so you can wake up from your siesta and act on those emails.
+
+Finally, the 'Miscellaneous' section allows you to define testing emails within the field "Fixed destinations". If something is defined in this box, the emails will not go to the corrected emails, but rather to your testing email addresses. It also allows you to define whether you want to spoof the source email address, define a fixed sender, a poll interval and the name of the tracking parameter injected in all the phishing links:
+
+<img src='img/maitm-misc-1.png'/>
+
+<img src='img/maitm-misc-2.png'/>
+
 
 ### Pipenv Execution
 
@@ -66,7 +111,7 @@ Install pipenv on your environment, the dependencies and run:
 apt install pipenv
 pipenv install --python=3.12
 pipenv shell
-./mail-in-the-middle.py -n -f -c config/config.yml
+./mail-in-the-middle.py cli -n -f -c config/config.yml
 ```
 
 Configuration files

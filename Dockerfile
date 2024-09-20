@@ -21,6 +21,8 @@ COPY Pipfile /Maitm/
 COPY Pipfile.lock /Maitm/
 COPY Maitm /Maitm/Maitm
 COPY config /Maitm/config
+COPY tabs /Maitm/tabs
+COPY gui.css /Maitm/gui.css
 COPY version /Maitm/version
 COPY README.md /Maitm/
 RUN apk update && \
