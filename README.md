@@ -224,6 +224,12 @@ teams: "https://<yourcompany>.webhook.office.com/webhookb2/<etc>"
 discord: "https://discord.com/api/webhooks/<id>"
 ```
 
+Talks
+=====
+The tool was published the first time on February 2024 in this [blog post](https://sensepost.com/blog/2024/mail-in-the-middle-a-tool-to-automate-spear-phishing-campaigns/) and it was publicly presented at Brucon 0x10 in September 2024: 
+
+https://www.youtube.com/watch?v=D37EQuX297g&ab_channel=BruCONSecurityConference 
+
 License
 =======
 Maitm is licensed under a [GNU General Public v3 License](https://www.gnu.org/licenses/gpl-3.0.en.html). Permissions beyond the scope of this license may be available at http://sensepost.com/contact/.
