@@ -64,10 +64,15 @@ docker tag ghcr.io/sensepost/mail-in-the-middle/maitm:latest maitm
 
 ## TUI
 
-There is a Textual User Interface (TUI) of the tool that you can invoke by using the option "tui" instead of "cli":
+There is a Textual User Interface (TUI) of the tool that you can invoke by using the option "tui" instead of "cli". 
+**Important**: If you run the TUI from the docker container you MUST pass the LINES and COLUMNS and TERM environment variables for the TUI to looks good, use the following syntax to use your current terminal configuration:
 
 ```bash 
-docker run -it --rm maitm tui
+docker run -it \ 
+    -e COLUMNS=$(tput cols) \ 
+    -e LINES=$(tput lines) \ 
+    -e TERM=$TERM \ 
+    --rm maitm tui
 ```
 
 The TUI will allow you to run the tool by clicking the big Green button.
